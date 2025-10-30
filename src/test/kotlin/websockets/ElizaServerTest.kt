@@ -9,7 +9,6 @@ import jakarta.websocket.OnMessage
 import jakarta.websocket.Session
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -64,10 +63,15 @@ class ElizaServerTest {
 
         // Verify that the server responded in a DOCTOR-like way about feeling sad.
         assertTrue(
-            list.any { (it.contains("feel", ignoreCase = true) ||
-                    it.contains("believe", ignoreCase = true) ||
-                    it.contains("enjoy", ignoreCase = true)) && it.contains("?") },
-            "Expected a DOCTOR-style response questioning about your mental health"
+            list.any {
+                (
+                    it.contains("feel", ignoreCase = true) ||
+                        it.contains("believe", ignoreCase = true) ||
+                        it.contains("enjoy", ignoreCase = true)
+                ) &&
+                    it.contains("?")
+            },
+            "Expected a DOCTOR-style response questioning about your mental health",
         )
     }
 }
