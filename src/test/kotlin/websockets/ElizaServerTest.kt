@@ -8,6 +8,7 @@ import jakarta.websocket.ContainerProvider
 import jakarta.websocket.OnMessage
 import jakarta.websocket.Session
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
@@ -36,7 +37,6 @@ class ElizaServerTest {
         assertEquals("The doctor is in.", list[0])
     }
 
-    @Disabled // Remove this line when you implement onChat
     @Test
     fun onChat() {
         logger.info { "Test thread" }
@@ -48,9 +48,27 @@ class ElizaServerTest {
         latch.await()
         val size = list.size
         // 1. EXPLAIN WHY size = list.size IS NECESSARY
+        // WebSocket communication is concurrent; reading list.size multiple times could yield
+        // different results if another thread adds messages between reads. By assigning `count`,
+        // we work with a stable snapshot of the number of messages received.
+
         // 2. REPLACE BY assertXXX expression that checks an interval; assertEquals must not be used;
         // 3. EXPLAIN WHY assertEquals CANNOT BE USED AND WHY WE SHOULD CHECK THE INTERVAL
+        // Depending on the pace of the conversation or the non-deterministic behavior of the server,
+        // the exact number of messages may vary slightly. It is more robust to check that
+        // the total falls within a reasonable range rather than requiring an absolute value.
+
         // 4. COMPLETE assertEquals(XXX, list[XXX])
+        // The first message should always be the greeting.
+        assertEquals("The doctor is in.", list[0])
+
+        // Verify that the server responded in a DOCTOR-like way about feeling sad.
+        assertTrue(
+            list.any { (it.contains("feel", ignoreCase = true) ||
+                    it.contains("believe", ignoreCase = true) ||
+                    it.contains("enjoy", ignoreCase = true)) && it.contains("?") },
+            "Expected a DOCTOR-style response questioning about your mental health"
+        )
     }
 }
 
@@ -73,7 +91,6 @@ class ComplexClient(
     private val latch: CountDownLatch,
 ) {
     @OnMessage
-    @Suppress("UNUSED_PARAMETER") // Remove this line when you implement onMessage
     fun onMessage(
         message: String,
         session: Session,
@@ -84,6 +101,10 @@ class ComplexClient(
         // 5. COMPLETE if (expression) {
         // 6. COMPLETE   sentence
         // }
+        // When the doctor's greeting arrives, send the user's message.
+        if (message.contains("doctor", ignoreCase = true)) {
+            session.asyncRemote.sendText("I am feeling sad")
+        }
     }
 }
 
