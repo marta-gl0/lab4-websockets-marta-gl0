@@ -52,6 +52,7 @@ class ElizaServerTest {
         // we work with a stable snapshot of the number of messages received.
 
         // 2. REPLACE BY assertXXX expression that checks an interval; assertEquals must not be used;
+        assertTrue(size in 4..5, "Expected between 4 and 5 messages but got $size")
         // 3. EXPLAIN WHY assertEquals CANNOT BE USED AND WHY WE SHOULD CHECK THE INTERVAL
         // Depending on the pace of the conversation or the non-deterministic behavior of the server,
         // the exact number of messages may vary slightly. It is more robust to check that
